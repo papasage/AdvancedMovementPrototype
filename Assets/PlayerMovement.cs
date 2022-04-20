@@ -81,8 +81,11 @@ public class PlayerMovement : MonoBehaviour
         //flatVel is only the X and Z movement speed
         Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
+        //SPEEDOMETER CODE HERE
+        float kilometerConversion = Mathf.Round(flatVel.magnitude) * 2;
         //display speed on HUD
-        SpeedText.text = "Speed:" + flatVel.magnitude.ToString("F0");
+        SpeedText.text = "Speed:" + kilometerConversion.ToString("F0") + "kph";
+
 
         //if it is greater than our moveSpeed, then recalculate what it should be and apply
         if (flatVel.magnitude > walkSpeed)
