@@ -6,7 +6,9 @@ using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed;
+    public float walkSpeed;
+    public float sprintSpeed;
+    public float wallrunSpeed;
     public float groundDrag;
 
     [Header("GroundCheck")]
@@ -54,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        MovePlayer();
+        Walk();
     }
 
     private void MyInput()
@@ -64,14 +66,14 @@ public class PlayerMovement : MonoBehaviour
         verticalInput = Input.GetAxisRaw("Vertical");
     }
 
-    private void MovePlayer()
+    private void Walk()
     {
         //movement direction is FORWARD/BACKWARD movement + LEFT/RIGHT movement
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
         //move our rigidbody in the move direction * moveSpeed
         // vector3.normalized will return the same direction, but with a length of 1.0
-        rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+        rb.AddForce(moveDirection.normalized * walkSpeed * 10f, ForceMode.Force);
     }
 
     private void SpeedControl()
@@ -80,12 +82,12 @@ public class PlayerMovement : MonoBehaviour
         Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         //display speed on HUD
-        SpeedText.text = "Speed:" + flatVel.magnitude.ToString();
+        SpeedText.text = "Speed:" + flatVel.magnitude.ToString("F0");
 
         //if it is greater than our moveSpeed, then recalculate what it should be and apply
-        if (flatVel.magnitude > moveSpeed)
+        if (flatVel.magnitude > walkSpeed)
         {
-            Vector3 limitedVel = flatVel.normalized * moveSpeed;
+            Vector3 limitedVel = flatVel.normalized * walkSpeed;
             rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
         }
     }
