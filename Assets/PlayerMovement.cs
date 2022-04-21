@@ -130,7 +130,7 @@ public class PlayerMovement : MonoBehaviour
             //Invoke(nameof(ResetJump), jumpCooldown);
         }
         //CROUCH START
-        if (Input.GetKeyDown(crouchKey))
+        if (Input.GetKeyDown(crouchKey) && moveSpeed < 4)
         {
             //when the player crouches, they shrink on the y
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
@@ -145,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
         }
         //SLIDE START
-        if (Input.GetKeyDown(slideKey) && (horizontalInput != 0 || verticalInput != 0))
+        if (Input.GetKeyDown(slideKey) && (horizontalInput != 0 || verticalInput != 0) && moveSpeed >= 4)
         {
             Vector3 slideDirection = moveDirection;
             StartSlide();
@@ -232,7 +232,7 @@ public class PlayerMovement : MonoBehaviour
         //on slope
         if(OnSlope() && !exitingSlope)
         {
-            rb.AddForce(GetSlopeMoveDirection(moveDirection) * moveSpeed * 20f, ForceMode.Force);
+            rb.AddForce(GetSlopeMoveDirection(moveDirection) * desiredMoveSpeed * 20f, ForceMode.Force);
 
             if (rb.velocity.y > 0)
             {
@@ -244,7 +244,7 @@ public class PlayerMovement : MonoBehaviour
         // vector3.normalized will return the same direction, but with a length of 1.0
 
         //on the ground apply a normal force
-        if (grounded)
+        if (grounded && !sliding)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
 
         //in the air apply a modified force with airMultiplier
@@ -256,7 +256,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private bool OnSlope()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f))
+        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f))
         {
             float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
             return angle < maxSlopeAngle && angle != 0;
@@ -265,7 +265,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private Vector3 GetSlopeMoveDirection(Vector3 direction)
     {
-        return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
+        return Vector3.ProjectOnPlane(direction, slopeHit.normal).normalized;
     }
     private void SpeedControl()
     {
@@ -321,7 +321,7 @@ public class PlayerMovement : MonoBehaviour
         //when the player crouches, they shrink on the y
         transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
         //the player shrinks to center, so apply force to get low quickly
-        rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+        rb.AddForce(orientation.forward * moveSpeed, ForceMode.Impulse);
 
         slideTimer = maxSlideTime;
 
@@ -333,7 +333,7 @@ public class PlayerMovement : MonoBehaviour
         //normal sliding
         if(!OnSlope() || rb.velocity.y > -0.1f)
         {
-            rb.AddForce(slideDirection.normalized * slideForce, ForceMode.Force);
+            rb.AddForce(slideDirection.normalized * slideForce, ForceMode.Impulse);
 
             //slideTimer -= Time.deltaTime;
         }
@@ -341,7 +341,7 @@ public class PlayerMovement : MonoBehaviour
         //slope sliding
         else
         {
-            rb.AddForce(GetSlopeMoveDirection(slideDirection) * slideForce, ForceMode.Force);
+            rb.AddForce(GetSlopeMoveDirection(slideDirection) * slideForce, ForceMode.Impulse);
         }
 
         if (slideTimer <= 0)

@@ -1943,7 +1943,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jumpKey: 32
   sprintKey: 304
-  crouchKey: 99
+  crouchKey: 306
   slideKey: 306
   state: 0
   walkSpeed: 7
@@ -1958,7 +1958,7 @@ MonoBehaviour:
   crouchSpeed: 3.5
   crouchYScale: 0.5
   maxSlideTime: 0.75
-  slideForce: 200
+  slideForce: 100
   slideDrag: 0
   maxSlopeAngle: 50
   SpeedText: {fileID: 1650931507}
