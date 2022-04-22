@@ -130,7 +130,7 @@ public class PlayerMovement : MonoBehaviour
             //Invoke(nameof(ResetJump), jumpCooldown);
         }
         //CROUCH START
-        if (Input.GetKeyDown(crouchKey) && moveSpeed < 4)
+        if (Input.GetKey(crouchKey) && moveSpeed < 7)
         {
             //when the player crouches, they shrink on the y
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
@@ -145,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
         }
         //SLIDE START
-        if (Input.GetKeyDown(slideKey) && (horizontalInput != 0 || verticalInput != 0) && moveSpeed >= 4)
+        if (Input.GetKeyDown(slideKey) && (horizontalInput != 0 || verticalInput != 0) && moveSpeed >= 7)
         {
             Vector3 slideDirection = moveDirection;
             StartSlide();
@@ -321,7 +321,7 @@ public class PlayerMovement : MonoBehaviour
         //when the player crouches, they shrink on the y
         transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
         //the player shrinks to center, so apply force to get low quickly
-        rb.AddForce(orientation.forward * moveSpeed, ForceMode.Impulse);
+        rb.AddForce(orientation.forward * (moveSpeed / 2), ForceMode.Impulse);
 
         slideTimer = maxSlideTime;
 

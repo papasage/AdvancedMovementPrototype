@@ -12,6 +12,11 @@ public class PlayerCamera : MonoBehaviour
     [Header("Orientation Point on Player")]
     public Transform orientation;
 
+    [Header("Player RigidBody for Speed Detection")]
+    [SerializeField] Rigidbody Player;
+    public float baseFOV;
+    private float playerSpeed;
+
     //Empty variables that are filled when the mouse moves. These values are added to the camera to make it rotate.
     float xRotation;
     float yRotation;
@@ -21,10 +26,13 @@ public class PlayerCamera : MonoBehaviour
         //Lock and Hide the cursor on start
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        Camera.main.fieldOfView = baseFOV;
     }
 
     private void Update()
     {
+        playerSpeed = Player.velocity.magnitude;
+        SpeedView();
         //get mouse input
         float mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * sensX;
         float mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * sensY;
@@ -41,5 +49,17 @@ public class PlayerCamera : MonoBehaviour
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
 
+    }
+
+    private void SpeedView()
+    {
+        if (playerSpeed <= 2)
+        {
+            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, baseFOV, Time.deltaTime*1.4f);
+        }
+        if (playerSpeed > 8)
+        {
+            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, baseFOV+10, Time.deltaTime * 1.4f);
+        }
     }
 }
