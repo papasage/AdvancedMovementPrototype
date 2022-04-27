@@ -1674,7 +1674,7 @@ MonoBehaviour:
   walkSpeed: 7
   sprintSpeed: 11
   slideSpeed: 30
-  wallrunSpeed: 15
+  wallrunSpeed: 11
   groundDrag: 7
   jumpForce: 10
   jumpCooldown: 0.25
@@ -1685,11 +1685,11 @@ MonoBehaviour:
   maxSlideTime: 0.75
   slideForce: 100
   slideDrag: 0
-  wallRunForce: 0
-  maxWallRunTime: 0
+  wallRunForce: 200
+  maxWallRunTime: 0.5
   wallrunning: 0
-  wallCheckDistance: 0
-  minJumpHeight: 0
+  wallCheckDistance: 0.7
+  minJumpHeight: 2
   maxSlopeAngle: 50
   SpeedText: {fileID: 1650931507}
   playerHeight: 2
@@ -1699,7 +1699,7 @@ MonoBehaviour:
     m_Bits: 256
   whatIsWall:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
 --- !u!43 &572213377
 Mesh:
   m_ObjectHideFlags: 0
@@ -16099,7 +16099,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh14188
+  m_Name: pb_Mesh14082
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2

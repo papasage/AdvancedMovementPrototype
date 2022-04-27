@@ -31,6 +31,7 @@ public class PlayerMovement : MonoBehaviour
     public float jumpCooldown;
     public float airMultiplier;
     public bool readyToJump;
+    private Vector3 jumpDirection;
     [Header("Crouching")]
     public float crouchSpeed;
     public float crouchYScale;
@@ -82,6 +83,8 @@ public class PlayerMovement : MonoBehaviour
 
         //save the starting player height for returning from a crouch
         startYScale = transform.localScale.y;
+
+        jumpDirection = transform.up;
     }
 
     private void Update()
@@ -107,9 +110,28 @@ public class PlayerMovement : MonoBehaviour
             ResetJump();
         }
         else
-            rb.drag = 0;
+        {
 
-        
+            rb.drag = 0;
+        }
+
+        //wallrunning check
+        if ((wallLeft || wallRight) && verticalInput > 0 && !grounded)
+        {
+            if (!wallrunning)
+            {
+                StartWallRun();
+            }
+
+        }
+        else
+        {
+            if (wallrunning)
+            {
+                StopWallRun();
+            }
+        }
+
     }
 
     private void FixedUpdate()
@@ -122,12 +144,18 @@ public class PlayerMovement : MonoBehaviour
             horizontalInput = 0;
             SlidingMovement();
         }
+
+        if (wallrunning)
+        {
+            WallRunningMovement();
+        }
             
     }
 
     // ----------------------------------------------------------------------------------------------------------------------------
     // OTHER METHODS & THINGS
     // ----------------------------------------------------------------------------------------------------------------------------
+
     private void MyInput()
     {
         //WALK
@@ -201,22 +229,19 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.walking;
             desiredMoveSpeed = walkSpeed;
         }
+        //Mode-Wallrunning
+        else if (wallrunning)
+        {
+            state = MovementState.wallrunning;
+            desiredMoveSpeed = wallrunSpeed;
+            ResetJump();
+        }
         //Mode-Air
         else
         {
             state = MovementState.air;
         }
-        //Mode-Wallrunning
-        if (wallrunning)
-        {
-            state = MovementState.wallrunning;
-            desiredMoveSpeed = wallrunSpeed;
-        }
-        if((wallLeft || wallRight) && verticalInput > 0 && AboveGround())
-        {
-            //start wallrun!
-        }
-
+        
         //check if the desiredMoveSpeed has changed drastically
         if(Mathf.Abs(desiredMoveSpeed - lastDesiredMoveSpeed) > 4f && moveSpeed !=0)
         { 
@@ -330,9 +355,8 @@ public class PlayerMovement : MonoBehaviour
 
         // reset y velocity so you always jump the same height
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
         //push the player up with jumpForce
-        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+        rb.AddForce(jumpDirection * jumpForce, ForceMode.Impulse);
 
     }
     private void ResetJump()
@@ -393,22 +417,37 @@ public class PlayerMovement : MonoBehaviour
         wallLeft = Physics.Raycast(transform.position, -orientation.right, out leftWallhit, wallCheckDistance, whatIsWall);
     }
     // --------WALLRUN----------------------
-    private bool AboveGround()
-    {
-        //return true if the raycast cant find the ground
-        return !Physics.Raycast(transform.position, Vector3.down, minJumpHeight, whatIsGround);
-    }
     private void StartWallRun()
     {
-
+        wallrunning = true;
     }
     private void WallRunningMovement()
     {
+        rb.useGravity = false;
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        Vector3 wallNormal = wallRight ? rightWallhit.normal : leftWallhit.normal;
+        Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
+        jumpDirection = wallNormal;
+        if((orientation.forward - wallForward).magnitude > (orientation.forward - -wallForward).magnitude)
+        {
+            wallForward = -wallForward;
+        }
 
+        //forward force
+        rb.AddForce(wallForward * wallRunForce, ForceMode.Force);
+
+
+        //push player into wall
+        if(!(wallLeft && horizontalInput > 0) && !(wallRight && horizontalInput < 0))
+        {
+            rb.AddForce(-wallNormal * 50, ForceMode.Force);
+        }
+        
     }
     private void StopWallRun()
     {
-
+        wallrunning = false;
+        jumpDirection = transform.up; 
     }
 
 
