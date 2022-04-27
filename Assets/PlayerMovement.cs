@@ -8,14 +8,16 @@ public class PlayerMovement : MonoBehaviour
     // ----------------------------------------------------------------------------------------------------------------------------
     // VARIABLES
     // ----------------------------------------------------------------------------------------------------------------------------
-    [Header("Keybinds")]
+    [Header("Keyboard Input")]
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode sprintKey = KeyCode.LeftShift;
     public KeyCode crouchKey = KeyCode.LeftControl;
     public KeyCode slideKey = KeyCode.LeftControl;
+    float horizontalInput;
+    float verticalInput;
     [Header("Movement")]
     private float moveSpeed;
-    public enum MovementState { walking, sprinting, crouching, sliding, air, }
+    public enum MovementState { walking, sprinting, crouching, sliding, air, wallrunning }
     public MovementState state;
     public float walkSpeed;
     public float sprintSpeed;
@@ -40,19 +42,30 @@ public class PlayerMovement : MonoBehaviour
     private float slideTimer;
     private bool sliding;
     private Vector3 slideDirection;
+    [Header("Wallrunning")]
+    public float wallRunForce;
+    public float maxWallRunTime;
+    private float wallRunTimer;
+    public bool wallrunning;
+    [Header("Wall Detection")]
+    public float wallCheckDistance;
+    public float minJumpHeight;
+    private RaycastHit leftWallhit;
+    private RaycastHit rightWallhit;
+    private bool wallLeft;
+    private bool wallRight;
     [Header("Slope Handling")]
     public float maxSlopeAngle;
     private RaycastHit slopeHit;
     bool exitingSlope;
     [Header("Speedometer")]
     public Text SpeedText;
-    [Header("Additional Variables")]
+    [Header("Referencess")]
     public float playerHeight;
     public Transform orientation;
     public LayerMask whatIsGround;
+    public LayerMask whatIsWall;
     bool grounded;
-    float horizontalInput;
-    float verticalInput;
     Vector3 moveDirection;
     Rigidbody rb;
 
@@ -76,9 +89,11 @@ public class PlayerMovement : MonoBehaviour
         //ground check
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
+        //always Run these Methods
         MyInput();
         SpeedControl();
         StateHandler();
+        CheckForWall();
 
         //handle drag & reset jump when grounded
         if (grounded && !sliding)
@@ -91,7 +106,6 @@ public class PlayerMovement : MonoBehaviour
             rb.drag = slideDrag;
             ResetJump();
         }
-         
         else
             rb.drag = 0;
 
@@ -181,18 +195,26 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.sprinting;
             desiredMoveSpeed = sprintSpeed;
         }
-
         //Mode-Walking
         else if (grounded)
         {
             state = MovementState.walking;
             desiredMoveSpeed = walkSpeed;
         }
-
         //Mode-Air
         else
         {
             state = MovementState.air;
+        }
+        //Mode-Wallrunning
+        if (wallrunning)
+        {
+            state = MovementState.wallrunning;
+            desiredMoveSpeed = wallrunSpeed;
+        }
+        if((wallLeft || wallRight) && verticalInput > 0 && AboveGround())
+        {
+            //start wallrun!
         }
 
         //check if the desiredMoveSpeed has changed drastically
@@ -208,6 +230,8 @@ public class PlayerMovement : MonoBehaviour
 
         lastDesiredMoveSpeed = desiredMoveSpeed;
     }
+
+    // --------MOVEMENT-----------------------
     private IEnumerator SmoothlyLerpMoveSpeed()
     {
         //smoothly lerp movementSpeed to desired value
@@ -254,19 +278,6 @@ public class PlayerMovement : MonoBehaviour
         //turn gravity off while on a slope
         rb.useGravity = !OnSlope();
     }
-    private bool OnSlope()
-    {
-        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f))
-        {
-            float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
-            return angle < maxSlopeAngle && angle != 0;
-        }
-        return false;
-    }
-    private Vector3 GetSlopeMoveDirection(Vector3 direction)
-    {
-        return Vector3.ProjectOnPlane(direction, slopeHit.normal).normalized;
-    }
     private void SpeedControl()
     {
         //CONTROL SPEED ON SLOPE
@@ -298,6 +309,21 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+    // --------SLOPES-----------------------
+    private bool OnSlope()
+    {
+        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f))
+        {
+            float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+            return angle < maxSlopeAngle && angle != 0;
+        }
+        return false;
+    }
+    private Vector3 GetSlopeMoveDirection(Vector3 direction)
+    {
+        return Vector3.ProjectOnPlane(direction, slopeHit.normal).normalized;
+    }
+    // --------JUMPING-----------------------
     private void Jump()
     {
         exitingSlope = true;
@@ -313,7 +339,8 @@ public class PlayerMovement : MonoBehaviour
     {
         readyToJump = true;
         exitingSlope = false;
-    } 
+    }
+    // --------SLIDING-----------------------
     private void StartSlide()
     {
         sliding = true;
@@ -357,7 +384,32 @@ public class PlayerMovement : MonoBehaviour
         //"normal size" is collected on Start()
         transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
     }
+    private void CheckForWall()
+    {
+        //to check the right wall, fire a raycast from the player orientation, to the right at a distance we set.
+        //We only want results from out "whatIsWall" layer mask, and output the result as "rightWallhit"
+        wallRight = Physics.Raycast(transform.position, orientation.right, out rightWallhit, wallCheckDistance, whatIsWall);
+        //do the same for the left
+        wallLeft = Physics.Raycast(transform.position, -orientation.right, out leftWallhit, wallCheckDistance, whatIsWall);
+    }
+    // --------WALLRUN----------------------
+    private bool AboveGround()
+    {
+        //return true if the raycast cant find the ground
+        return !Physics.Raycast(transform.position, Vector3.down, minJumpHeight, whatIsGround);
+    }
+    private void StartWallRun()
+    {
 
+    }
+    private void WallRunningMovement()
+    {
+
+    }
+    private void StopWallRun()
+    {
+
+    }
 
 
 }

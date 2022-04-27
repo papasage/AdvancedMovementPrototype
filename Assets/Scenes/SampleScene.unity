@@ -166,13 +166,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraPosition: {fileID: 848697719}
---- !u!43 &179719188
+--- !u!43 &168692610
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh14010
+  m_Name: pb_Mesh13944
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -1685,6 +1685,11 @@ MonoBehaviour:
   maxSlideTime: 0.75
   slideForce: 100
   slideDrag: 0
+  wallRunForce: 0
+  maxWallRunTime: 0
+  wallrunning: 0
+  wallCheckDistance: 0
+  minJumpHeight: 0
   maxSlopeAngle: 50
   SpeedText: {fileID: 1650931507}
   playerHeight: 2
@@ -1692,6 +1697,9 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 256
+  whatIsWall:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!43 &572213377
 Mesh:
   m_ObjectHideFlags: 0
@@ -2731,7 +2739,7 @@ MeshCollider:
   serializedVersion: 4
   m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 179719188}
+  m_Mesh: {fileID: 168692610}
 --- !u!114 &807440389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16084,7 +16092,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 807440386}
-  m_Mesh: {fileID: 179719188}
+  m_Mesh: {fileID: 168692610}
 --- !u!43 &832605174
 Mesh:
   m_ObjectHideFlags: 0
@@ -20576,7 +20584,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh13952
+  m_Name: pb_Mesh13894
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
