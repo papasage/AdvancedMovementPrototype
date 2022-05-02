@@ -173,11 +173,11 @@ public class PlayerMovement : MonoBehaviour
             jumpmode += 1;
             Jump();
 
-            if (grounded)
+            if (grounded || wallrunning)
             {
                 playerAudio.PlayJump();
             }
-            if (!grounded)
+            if (!grounded && !wallrunning)
             {
                 playerAudio.PlayDoubleJump();
             }
