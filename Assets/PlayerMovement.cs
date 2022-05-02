@@ -44,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
     private float slideTimer;
     private bool sliding;
     private Vector3 slideDirection;
+    int slidesoundCounter = 0;
     [Header("Wallrunning")]
     public float wallRunForce;
     public float maxWallRunTime;
@@ -216,11 +217,6 @@ public class PlayerMovement : MonoBehaviour
         //Mode-Sliding
         if (sliding)
         {
-            if (grounded && rb.velocity.magnitude * 2 > 1f && playerAudio.playersound.isPlaying == false)
-            {
-                playerAudio.PlaySlide();
-            }
-
             state = MovementState.sliding;
             if (OnSlope() && rb.velocity.y < 0.1f)
             {
@@ -415,10 +411,22 @@ public class PlayerMovement : MonoBehaviour
     }
     private void SlidingMovement()
     {
-        
+        if (grounded)
+        {            
+            slidesoundCounter ++;
+            if (slidesoundCounter == 1)
+            {
+                playerAudio.PlaySlide();
+            }
+        }
+
+        if (rb.velocity.magnitude *2 <= 1)
+        {
+            playerAudio.playersound.Stop();
+        }
 
         //normal sliding
-        if(!OnSlope() || rb.velocity.y > -0.1f)
+        if (!OnSlope() || rb.velocity.y > -0.1f)
         {
             rb.AddForce(slideDirection.normalized * slideForce, ForceMode.Impulse);
 
@@ -439,6 +447,8 @@ public class PlayerMovement : MonoBehaviour
     }
     private void StopSlide()
     {
+        slidesoundCounter = 0;
+        playerAudio.playersound.Stop();
         sliding = false;
         //return the player to normal size when key is released
         //"normal size" is collected on Start()
