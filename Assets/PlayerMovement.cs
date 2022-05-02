@@ -31,6 +31,7 @@ public class PlayerMovement : MonoBehaviour
     public float jumpCooldown;
     public float airMultiplier;
     public bool readyToJump;
+    float jumpmode = 0;
     private Vector3 jumpDirection;
     [Header("Crouching")]
     public float crouchSpeed;
@@ -69,6 +70,7 @@ public class PlayerMovement : MonoBehaviour
     bool grounded;
     Vector3 moveDirection;
     Rigidbody rb;
+    AudioManager playerAudio;
 
     // ----------------------------------------------------------------------------------------------------------------------------
     // START / UPDATE / FIXED UPDATE
@@ -81,6 +83,9 @@ public class PlayerMovement : MonoBehaviour
         //we freeze the rotations so that it doesn't fall over. we are controlling every move the player makes
         rb.freezeRotation = true;
 
+        //also grab the script that controlls player audio
+        playerAudio = GetComponent<AudioManager>();
+
         //save the starting player height for returning from a crouch
         startYScale = transform.localScale.y;
 
@@ -88,14 +93,13 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private void Update()
-    {
-        //ground check
+    {        //ground check
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
         //always Run these Methods
         MyInput();
         SpeedControl();
-        StateHandler();
+        StateHandler(); //statehandler does audio triggers too
         CheckForWall();
 
         //handle drag & reset jump when grounded
@@ -132,6 +136,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+       
     }
 
     private void FixedUpdate()
@@ -149,7 +154,7 @@ public class PlayerMovement : MonoBehaviour
         {
             WallRunningMovement();
         }
-            
+        Debug.Log(rb.velocity.magnitude*2);
     }
 
     // ----------------------------------------------------------------------------------------------------------------------------
@@ -165,9 +170,17 @@ public class PlayerMovement : MonoBehaviour
         if(Input.GetKeyDown(jumpKey) && readyToJump)
         {
             readyToJump = false;
-
+            jumpmode += 1;
             Jump();
 
+            if (grounded)
+            {
+                playerAudio.PlayJump();
+            }
+            if (!grounded)
+            {
+                playerAudio.PlayDoubleJump();
+            }
             //Jump will repeat if key is held, but at a jumpCooldown interval.
             //Invoke(nameof(ResetJump), jumpCooldown);
         }
@@ -203,14 +216,19 @@ public class PlayerMovement : MonoBehaviour
         //Mode-Sliding
         if (sliding)
         {
+            if (grounded && rb.velocity.magnitude * 2 > 1f && playerAudio.playersound.isPlaying == false)
+            {
+                playerAudio.PlaySlide();
+            }
+
             state = MovementState.sliding;
             if (OnSlope() && rb.velocity.y < 0.1f)
             {
                 desiredMoveSpeed = slideSpeed;
             }
             else desiredMoveSpeed = sprintSpeed;
+         }
 
-        }
         //Mode-Crouching
         else if (Input.GetKey(crouchKey))
         {
@@ -220,18 +238,33 @@ public class PlayerMovement : MonoBehaviour
         //Mode-Sprinting
         else if(grounded && Input.GetKey(sprintKey))
         {
+            if (grounded && rb.velocity.magnitude * 2 > 19f && playerAudio.playersound.isPlaying == false)
+            {
+                playerAudio.PlaySprint();
+            }
+
             state = MovementState.sprinting;
             desiredMoveSpeed = sprintSpeed;
         }
         //Mode-Walking
         else if (grounded)
         {
+            if (grounded && rb.velocity.magnitude * 2 > 1f && grounded && rb.velocity.magnitude * 2 <18.9f && playerAudio.playersound.isPlaying == false)
+            {
+                playerAudio.PlayWalk();
+            }
+
             state = MovementState.walking;
             desiredMoveSpeed = walkSpeed;
         }
         //Mode-Wallrunning
         else if (wallrunning)
         {
+            if (wallrunning && playerAudio.playersound.isPlaying == false)
+            {
+                playerAudio.PlaySprint();
+            }
+
             state = MovementState.wallrunning;
             desiredMoveSpeed = wallrunSpeed;
             ResetJump();
@@ -255,6 +288,7 @@ public class PlayerMovement : MonoBehaviour
 
         lastDesiredMoveSpeed = desiredMoveSpeed;
     }
+
 
     // --------MOVEMENT-----------------------
     private IEnumerator SmoothlyLerpMoveSpeed()
@@ -351,16 +385,18 @@ public class PlayerMovement : MonoBehaviour
     // --------JUMPING-----------------------
     private void Jump()
     {
+        //jumpmode += 1;
         exitingSlope = true;
 
         // reset y velocity so you always jump the same height
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         //push the player up with jumpForce
         rb.AddForce(jumpDirection * jumpForce, ForceMode.Impulse);
-
+       
     }
     private void ResetJump()
     {
+        jumpmode = 0;
         readyToJump = true;
         exitingSlope = false;
     }
@@ -408,6 +444,7 @@ public class PlayerMovement : MonoBehaviour
         //"normal size" is collected on Start()
         transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
     }
+    // --------WALLRUN----------------------
     private void CheckForWall()
     {
         //to check the right wall, fire a raycast from the player orientation, to the right at a distance we set.
@@ -416,7 +453,6 @@ public class PlayerMovement : MonoBehaviour
         //do the same for the left
         wallLeft = Physics.Raycast(transform.position, -orientation.right, out leftWallhit, wallCheckDistance, whatIsWall);
     }
-    // --------WALLRUN----------------------
     private void StartWallRun()
     {
         wallrunning = true;
