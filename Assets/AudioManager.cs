@@ -49,7 +49,7 @@ public class AudioManager : MonoBehaviour
     public void PlaySlide()
     {
         playersound.clip = slide;
-        playersound.volume = Random.Range(randomMin, randomMax);
+        playersound.volume = .6f;
         playersound.pitch = Random.Range(randomMin, randomMax);
         playersound.Play();
         //playersound.PlayOneShot(slide);
