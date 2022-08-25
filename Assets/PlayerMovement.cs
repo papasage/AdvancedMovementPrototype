@@ -84,7 +84,7 @@ public class PlayerMovement : MonoBehaviour
         //we freeze the rotations so that it doesn't fall over. we are controlling every move the player makes
         rb.freezeRotation = true;
 
-        //also grab the script that controlls player audio
+        //also grab the script that controls player audio
         playerAudio = GetComponent<AudioManager>();
 
         //save the starting player height for returning from a crouch
